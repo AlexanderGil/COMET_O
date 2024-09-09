@@ -18,7 +18,7 @@ XLM-RoBERTa Encoder
     Pretrained XLM-RoBERTa  encoder from Hugging Face.
 """
 from typing import Dict
-
+from transformers import BitsAndBytesConfig
 import torch
 from transformers import XLMRobertaConfig, XLMRobertaModel, XLMRobertaTokenizerFast
 
@@ -36,14 +36,26 @@ class XLMREncoder(BERTEncoder):
     """
 
     def __init__(
-        self, pretrained_model: str, load_pretrained_weights: bool = True
+        self,
+        pretrained_model: str,
+        load_pretrained_weights: bool = True,
+        quantization_config: BitsAndBytesConfig = None
     ) -> None:
         super(Encoder, self).__init__()
         self.tokenizer = XLMRobertaTokenizerFast.from_pretrained(pretrained_model)
         if load_pretrained_weights:
-            self.model = XLMRobertaModel.from_pretrained(
-                pretrained_model, add_pooling_layer=False
-            )
+            if quantization_config:
+                self.model = XLMRobertaModel.from_pretrained(
+                    pretrained_model,
+                    add_pooling_layer=False,
+                    quantization_config=quantization_config
+                )
+            else:
+                # Load model without quantization
+                self.model = XLMRobertaModel.from_pretrained(
+                    pretrained_model, 
+                    add_pooling_layer=False
+                )
         else:
             self.model = XLMRobertaModel(
                 XLMRobertaConfig.from_pretrained(pretrained_model),
@@ -63,7 +75,7 @@ class XLMREncoder(BERTEncoder):
 
     @classmethod
     def from_pretrained(
-        cls, pretrained_model: str, load_pretrained_weights: bool = True
+        cls, pretrained_model: str, load_pretrained_weights: bool = True, quantization_config: BitsAndBytesConfig = None
     ) -> Encoder:
         """Function that loads a pretrained encoder from Hugging Face.
 
