@@ -25,6 +25,11 @@ from transformers import XLMRobertaConfig, XLMRobertaModel, XLMRobertaTokenizerF
 from comet.encoders.base import Encoder
 from comet.encoders.bert import BERTEncoder
 
+quantization_config_1 = BitsAndBytesConfig(
+    load_in_8bit=True,  # Example setting for 8-bit quantization
+    device_map="auto"
+)
+
 
 class XLMREncoder(BERTEncoder):
     """XLM-RoBERTA Encoder encoder.
@@ -44,11 +49,12 @@ class XLMREncoder(BERTEncoder):
         super(Encoder, self).__init__()
         self.tokenizer = XLMRobertaTokenizerFast.from_pretrained(pretrained_model)
         if load_pretrained_weights:
-            if quantization_config:
+            if quantization_config_1:
                 self.model = XLMRobertaModel.from_pretrained(
                     pretrained_model,
                     add_pooling_layer=False,
-                    quantization_config=quantization_config
+                    load_in_8bit=quantization_config_1.load_in_8bit,  # For 8-bit loading
+                    device_map=quantization_config_1.device_map  
                 )
             else:
                 # Load model without quantization
