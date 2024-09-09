@@ -137,8 +137,6 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
         if quantization_config:
             self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
                 self.hparams.pretrained_model,
-                load_in_8bit=True,  # Load the model in 8-bit precision
-                device_map="auto",  # Automatically map layers to devices (CPU/GPU)
                 quantization_config=quantization_config,  # Apply quantization config
             )
         else:
