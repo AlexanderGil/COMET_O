@@ -132,15 +132,25 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
         self.init_metrics()
 
     def initialize_params(self):
-            quantization_config = self.hparams.quantization_config
+        quantization_config = self.hparams.quantization_config
         
+        if quantization_config:
             self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
-            self.hparams.pretrained_model, load_pretrained_weights
-        )
+                self.hparams.pretrained_model,
+                load_in_8bit=True,  # Load the model in 8-bit precision
+                device_map="auto",  # Automatically map layers to devices (CPU/GPU)
+                quantization_config=quantization_config,  # Apply quantization config
+            )
+        else:
+            print('Load without quantization')
+            self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
+                self.hparams.pretrained_model,
+                load_pretrained_weights=self.hparams.load_pretrained_weights,
+            )
 
         if self.hparams.layer == "mix":
             self.layerwise_attention = LayerwiseAttention(
-                layer_transformation=layer_transformation,
+                layer_transformation=self.hparams.layer_transformation,
                 num_layers=self.encoder.num_layers,
                 dropout=self.hparams.dropout,
                 layer_norm=self.hparams.layer_norm,
