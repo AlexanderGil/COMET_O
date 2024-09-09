@@ -32,7 +32,7 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, Subse
 
 from comet.encoders import str2encoder
 from comet.modules import LayerwiseAttention
-
+from transformers import BitsAndBytesConfig
 from .lru_cache import tensor_lru_cache
 from .pooling_utils import average_pooling, max_pooling
 from .predict_pbar import PredictProgressBar
@@ -113,14 +113,31 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
         validation_data: Optional[List[str]] = None,
         class_identifier: Optional[str] = None,
         load_pretrained_weights: bool = True,
+        quantization_config: Optional[BitsAndBytesConfig] = None,
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
-        self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
+        
+        self.initialize_params()
+        
+        self.epoch_nr = 0
+
+        self.nr_frozen_epochs = self.hparams.nr_frozen_epochs
+        self.mc_dropout = False  # Flag used to control usage of MC Dropout
+        self.caching = False  # Flag used to control Embedding Caching
+        self.use_context = False
+        self.pool = pool
+
+        # If not defined here, metrics will not live in the same device as our model.
+        self.init_metrics()
+
+    def initialize_params(self):
+            quantization_config = self.hparams.quantization_config
+        
+            self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
             self.hparams.pretrained_model, load_pretrained_weights
         )
 
-        self.epoch_nr = 0
         if self.hparams.layer == "mix":
             self.layerwise_attention = LayerwiseAttention(
                 layer_transformation=layer_transformation,
@@ -139,16 +156,8 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
 
         if self.hparams.keep_embeddings_frozen:
             self.encoder.freeze_embeddings()
-
-        self.nr_frozen_epochs = self.hparams.nr_frozen_epochs
-        self.mc_dropout = False  # Flag used to control usage of MC Dropout
-        self.caching = False  # Flag used to control Embedding Caching
-        self.use_context = False
-        self.pool = pool
-
-        # If not defined here, metrics will not live in the same device as our model.
-        self.init_metrics()
-
+        
+    
     def set_mc_dropout(self, value: int):
         """Sets Monte Carlo Dropout runs per sample.
 
