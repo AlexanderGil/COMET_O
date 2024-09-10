@@ -46,7 +46,7 @@ class XLMREncoder(BERTEncoder):
         self.tokenizer = XLMRobertaTokenizerFast.from_pretrained(pretrained_model)
         print('Before quantization')
         if quantization_config is None:
-            quantization_config_1 = BitsAndBytesConfig(load_in_8bit=True, device_map="auto")
+            quantization_config_1 = BitsAndBytesConfig(load_in_4bit=True, device_map="auto")
         if load_pretrained_weights:
             if quantization_config_1:
                 self.model = XLMRobertaModel.from_pretrained(
