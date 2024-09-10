@@ -113,12 +113,15 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
         validation_data: Optional[List[str]] = None,
         class_identifier: Optional[str] = None,
         load_pretrained_weights: bool = True,
-        quantization_config: Optional[BitsAndBytesConfig] = None,
+        #quantization_config: Optional[BitsAndBytesConfig] = None,
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
         
-        self.initialize_params()
+        self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
+                self.hparams.pretrained_model,
+                load_pretrained_weights=self.hparams.load_pretrained_weights,
+        )
         
         self.epoch_nr = 0
 
@@ -130,21 +133,6 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
 
         # If not defined here, metrics will not live in the same device as our model.
         self.init_metrics()
-
-    def initialize_params(self):
-        quantization_config = self.hparams.quantization_config
-        
-        if quantization_config:
-            self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
-                self.hparams.pretrained_model,
-                quantization_config=quantization_config,  # Apply quantization config
-            )
-        else:
-            print('Load without quantization')
-            self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
-                self.hparams.pretrained_model,
-                load_pretrained_weights=self.hparams.load_pretrained_weights,
-            )
 
         if self.hparams.layer == "mix":
             self.layerwise_attention = LayerwiseAttention(
