@@ -119,8 +119,7 @@ class CometModel(ptl.LightningModule, metaclass=abc.ABCMeta):
         self.save_hyperparameters()
         
         self.encoder = str2encoder[self.hparams.encoder_model].from_pretrained(
-                self.hparams.pretrained_model,
-                load_pretrained_weights=self.hparams.load_pretrained_weights,
+            self.hparams.pretrained_model, load_pretrained_weights
         )
         
         self.epoch_nr = 0
