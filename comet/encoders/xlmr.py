@@ -52,7 +52,7 @@ class XLMREncoder(BERTEncoder):
                 self.model = XLMRobertaModel.from_pretrained(
                     pretrained_model,
                     add_pooling_layer=False,
-                    load_in_8bit=quantization_config_1.load_in_8bit,  # For 8-bit loading
+                    load_in_4bit=quantization_config_1.load_in_4bit,
                     device_map=quantization_config_1.device_map  
                 )
             else:
