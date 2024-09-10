@@ -69,7 +69,7 @@ class XLMREncoder(BERTEncoder):
 
     @classmethod
     def from_pretrained(
-        cls, pretrained_model: str, load_pretrained_weights: bool = True
+        cls, pretrained_model: str, load_pretrained_weights: bool = False
     ) -> Encoder:
         """Function that loads a pretrained encoder from Hugging Face.
 
@@ -81,7 +81,7 @@ class XLMREncoder(BERTEncoder):
         Returns:
             Encoder: XLMREncoder object.
         """
-        return XLMREncoder(pretrained_model, load_pretrained_weights)
+        return XLMREncoder(pretrained_model, load_pretrained_weights, quantization_config_1)
 
     def forward(
         self, input_ids: torch.Tensor, attention_mask: torch.Tensor, **kwargs
