@@ -69,7 +69,7 @@ class XLMREncoder(BERTEncoder):
 
     @classmethod
     def from_pretrained(
-        cls, pretrained_model: str, load_pretrained_weights: bool = False
+        cls, pretrained_model: str, load_pretrained_weights: bool = False, quantization_config_1 = None
     ) -> Encoder:
         """Function that loads a pretrained encoder from Hugging Face.
 
