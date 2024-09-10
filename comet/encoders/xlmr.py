@@ -18,17 +18,12 @@ XLM-RoBERTa Encoder
     Pretrained XLM-RoBERTa  encoder from Hugging Face.
 """
 from typing import Dict
-from transformers import BitsAndBytesConfig
+
 import torch
 from transformers import XLMRobertaConfig, XLMRobertaModel, XLMRobertaTokenizerFast
 
 from comet.encoders.base import Encoder
 from comet.encoders.bert import BERTEncoder
-
-quantization_config_1 = BitsAndBytesConfig(
-    load_in_8bit=True,  # Example setting for 8-bit quantization
-    device_map="auto"
-)
 
 
 class XLMREncoder(BERTEncoder):
@@ -39,6 +34,7 @@ class XLMREncoder(BERTEncoder):
         load_pretrained_weights (bool): If set to True loads the pretrained weights
             from Hugging Face
     """
+    from transformers import BitsAndBytesConfig
 
     def __init__(
         self,
@@ -48,6 +44,9 @@ class XLMREncoder(BERTEncoder):
     ) -> None:
         super(Encoder, self).__init__()
         self.tokenizer = XLMRobertaTokenizerFast.from_pretrained(pretrained_model)
+        print('Before quantization')
+        if quantization_config is None:
+            quantization_config_1 = BitsAndBytesConfig(load_in_8bit=True, device_map="auto")
         if load_pretrained_weights:
             if quantization_config_1:
                 self.model = XLMRobertaModel.from_pretrained(
@@ -81,7 +80,7 @@ class XLMREncoder(BERTEncoder):
 
     @classmethod
     def from_pretrained(
-        cls, pretrained_model: str, load_pretrained_weights: bool = True, quantization_config: BitsAndBytesConfig = None
+        cls, pretrained_model: str, load_pretrained_weights: bool = True
     ) -> Encoder:
         """Function that loads a pretrained encoder from Hugging Face.
 
@@ -93,7 +92,7 @@ class XLMREncoder(BERTEncoder):
         Returns:
             Encoder: XLMREncoder object.
         """
-        return XLMREncoder(pretrained_model, load_pretrained_weights, quantization_config)
+        return XLMREncoder(pretrained_model, load_pretrained_weights)
 
     def forward(
         self, input_ids: torch.Tensor, attention_mask: torch.Tensor, **kwargs
