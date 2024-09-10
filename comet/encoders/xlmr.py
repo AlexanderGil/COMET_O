@@ -48,7 +48,7 @@ class XLMREncoder(BERTEncoder):
         if quantization_config is None:
             quantization_config_1 = BitsAndBytesConfig(load_in_4bit=True, device_map="auto")
         if load_pretrained_weights:
-            print('quantization_config_1':quantization_config_1)
+            print('quantization_config_1',quantization_config_1)
             if quantization_config_1:
                 self.model = XLMRobertaModel.from_pretrained(
                     pretrained_model,
